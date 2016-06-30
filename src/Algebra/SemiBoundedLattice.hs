@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Algebra.SemiBoundedLattice (Complemented (..), (\\\), (/\\), (//\)) where
+module Algebra.SemiBoundedLattice (Complemented (..), (\\\), (/\\), (//\), (-->), negation) where
 
 import Data.List (union, intersect, (\\))
 
