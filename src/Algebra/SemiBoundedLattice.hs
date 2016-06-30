@@ -35,15 +35,15 @@ class (BoundedLattice a, SemiCoHeytingAlgebra a) => CoHeytingAlgebra a where
   supplement a = top \\\ a
 
 -- | A Heyting Algebra requires a bounded lattice.
--- here the lattice must be lower bounded
+-- here the lattice must be upper bounded
 class UpperBoundedDistributiveLattice a => SemiHeytingAlgebra a where
   implication :: a -> a -> a
   (-->) :: a -> a -> a
   (-->) = implication
   implication = (-->)
 
--- | supplement
--- see <https://ncatlab.org/nlab/show/co-Heyting+negation>
+-- | negation
+-- see <https://ncatlab.org/nlab/show/Heyting+negation>
 class (BoundedLattice a, SemiHeytingAlgebra a) => HeytingAlgebra a where
   negation :: a -> a
   negation a = a --> bottom
