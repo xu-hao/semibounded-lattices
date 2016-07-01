@@ -1,27 +1,57 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-|
+Module      : Algebra.SemiBoundedLattice
+Description : Haskell typeclasses and instances of semibounded lattices, Heyting algebra, co-Heyting algebra, and Boolean algebra
+Copyright   : (c) Hao Xu, 2016
+License     : BSD-3
+Maintainer  : xuh@email.unc.edu
+Stability   : experimental
+Portability : portable
 
-module Algebra.SemiBoundedLattice (Complemented (..), (\\\), (/\\), (//\), (-->), negation) where
+Haskell typeclasses and instances of semibounded lattices, Heyting algebra, co-Heyting algebra, and Boolean algebra
+-}
+module Algebra.SemiBoundedLattice (
+  Complemented (..), (/\\), (//\),
+  DistributiveLattice, LowerBoundedLattice, UpperBoundedLattice, LowerBoundedDistributiveLattice, UpperBoundedDistributiveLattice, BooleanAlgebra (..),
+  HeytingAlgebra, CoHeytingAlgebra, SemiHeytingAlgebra (..), SemiCoHeytingAlgebra (..), BiHeytingAlgebra) where
 
-import Data.List (union, intersect, (\\))
+-- import Data.List (union, intersect, (\\))
+import Data.Set (union, intersection, (\\), Set)
 
 import Algebra.Lattice
 
 -- | The combination of a JoinSemiLattice and a BoundedMeetSemiLattice makes an UpperBoundedLattice if the absorption law holds:
+--
 -- > Absorption: a \/ (a /\ b) == a /\ (a \/ b) == a
 class (JoinSemiLattice a, BoundedMeetSemiLattice a) => UpperBoundedLattice a where
 
 -- | The combination of a BoundedJoinSemiLattice and a MeetSemiLattice makes an LowerBoundedLattice if the absorption law holds:
+--
 -- > Absorption: a \/ (a /\ b) == a /\ (a \/ b) == a
 class (BoundedJoinSemiLattice a, MeetSemiLattice a) => LowerBoundedLattice a where
 
+-- | A lattice is distributive if the distributivity law holds:
+--
+-- > Distributivity: a /\ (b \/ c) == (a /\ b) \/ (a /\ c)
+-- see <https://en.wikipedia.org/wiki/Distributive_lattice>
 class Lattice a => DistributiveLattice a where
 
+-- | A lattice is distributive if the distributivity law holds:
+--
+-- > Distributivity: a /\ (b \/ c) == (a /\ b) \/ (a /\ c)
+-- see <https://en.wikipedia.org/wiki/Distributive_lattice>
 class LowerBoundedLattice a => LowerBoundedDistributiveLattice a where
 
+-- | A lattice is distributive if the distributivity law holds:
+--
+-- > Distributivity: a /\ (b \/ c) == (a /\ b) \/ (a /\ c)
+-- see <https://en.wikipedia.org/wiki/Distributive_lattice>
 class UpperBoundedLattice a => UpperBoundedDistributiveLattice a where
 
--- | A co-Heyting Algebra requires a bounded lattice.
--- here the lattice must be lower bounded
+-- | A semi-co-Heyting Algebra is dual of a semi-Heyting algebra where the following law holds:
+--
+-- > x \\\ y <= z if and only if x <= y \/ z
+-- see <https://ncatlab.org/nlab/show/co-Heyting+algebra>
 class LowerBoundedDistributiveLattice a => SemiCoHeytingAlgebra a where
   subtraction :: a -> a -> a
   (\\\) :: a -> a -> a
@@ -34,8 +64,14 @@ class (BoundedLattice a, SemiCoHeytingAlgebra a) => CoHeytingAlgebra a where
   supplement :: a -> a
   supplement a = top \\\ a
 
--- | A Heyting Algebra requires a bounded lattice.
--- here the lattice must be upper bounded
+-- | In most literature, a Heyting algebra requires a bounded lattice.
+-- We only require a UpperBoundedDistributiveLattice here for semi-Heyting algebra. (here the lattice must be upper bounded)
+-- The following law holds:
+--
+-- > x /\ a <= b if and only if x <= (a --> b)
+-- see <https://ncatlab.org/nlab/show/Heyting+algebra>
+-- Heyting algebras are always distributive. see <https://en.wikipedia.org/wiki/Heyting_algebra#Distributivity>
+--
 class UpperBoundedDistributiveLattice a => SemiHeytingAlgebra a where
   implication :: a -> a -> a
   (-->) :: a -> a -> a
@@ -43,14 +79,21 @@ class UpperBoundedDistributiveLattice a => SemiHeytingAlgebra a where
   implication = (-->)
 
 -- | negation
--- see <https://ncatlab.org/nlab/show/Heyting+negation>
+-- see <https://ncatlab.org/nlab/show/Heyting+algebra>
 class (BoundedLattice a, SemiHeytingAlgebra a) => HeytingAlgebra a where
   negation :: a -> a
   negation a = a --> bottom
 
+-- | A lattice that is both a Heyting algebra and a co-Heyting algebra is a bi-Heyting algebra
 class (HeytingAlgebra a, CoHeytingAlgebra a) => BiHeytingAlgebra a where
 
 -- | A Boolean Algebra is a complemented distributive lattice, see <https://en.wikipedia.org/wiki/Boolean_algebra_(structure)>
+-- or equivalently a Heyting algebra where
+--
+-- > negation (negation a) == a
+-- in a Boolean algebra
+--
+-- > supplement == negation
 class BiHeytingAlgebra a => BooleanAlgebra a where
   complement :: a -> a
   complement = supplement
@@ -96,17 +139,9 @@ instance SemiCoHeytingAlgebra a => HeytingAlgebra (Complemented a) where
 instance SemiCoHeytingAlgebra a => BiHeytingAlgebra (Complemented a) where
 instance SemiCoHeytingAlgebra a => BooleanAlgebra (Complemented a) where
 
-instance Eq a => JoinSemiLattice [a] where
-  join = union
-
-instance Eq a => MeetSemiLattice [a] where
-  meet = intersect
-
-instance Eq a => BoundedJoinSemiLattice [a] where
-  bottom = []
-instance Eq a => LowerBoundedLattice [a]
-instance Eq a => LowerBoundedDistributiveLattice [a]
-instance Eq a => SemiCoHeytingAlgebra [a] where
+instance Ord a => LowerBoundedLattice (Set a)
+instance Ord a => LowerBoundedDistributiveLattice (Set a)
+instance Ord a => SemiCoHeytingAlgebra (Set a) where
   subtraction = (\\)
 
 (/\\), rmeetproj :: SemiCoHeytingAlgebra a => a -> Complemented a -> a
