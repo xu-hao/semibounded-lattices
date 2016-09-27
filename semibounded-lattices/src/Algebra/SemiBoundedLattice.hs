@@ -18,7 +18,7 @@ module Algebra.SemiBoundedLattice (
 -- import Data.List (union, intersect, (\\))
 import Data.Set (union, intersection, (\\), Set)
 
-import Algebra.Lattice
+import Algebra.Lattice (JoinSemiLattice(..), MeetSemiLattice(..), BoundedJoinSemiLattice(..), BoundedMeetSemiLattice(..), Lattice (..), BoundedLattice(..))
 
 -- | The combination of a JoinSemiLattice and a BoundedMeetSemiLattice makes an UpperBoundedLattice if the absorption law holds:
 --
@@ -101,16 +101,16 @@ class BiHeytingAlgebra a => BooleanAlgebra a where
 data Complemented a = Include a | Exclude a deriving Show
 
 instance SemiCoHeytingAlgebra a => JoinSemiLattice (Complemented a) where
-    join (Include vars) (Include vars2) = Include (vars \/ vars2)
-    join (Include vars) (Exclude vars2) = Exclude (vars2 \\\ vars)
-    join (Exclude vars) (Include vars2) = Exclude (vars \\\ vars2)
-    join (Exclude vars) (Exclude vars2) = Exclude (vars2 /\ vars)
+    (Include vars) \/ (Include vars2) = Include (vars \/ vars2)
+    (Include vars) \/ (Exclude vars2) = Exclude (vars2 \\\ vars)
+    (Exclude vars) \/ (Include vars2) = Exclude (vars \\\ vars2)
+    (Exclude vars) \/ (Exclude vars2) = Exclude (vars2 /\ vars)
 
 instance SemiCoHeytingAlgebra a => MeetSemiLattice (Complemented a) where
-    meet (Include vars) (Include vars2) = Include (vars /\ vars2)
-    meet (Exclude vars) (Include vars2) = Include (vars2 \\\ vars)
-    meet (Include vars) (Exclude vars2) = Include (vars \\\ vars2)
-    meet (Exclude vars) (Exclude vars2) = Exclude (vars \/ vars2)
+    (Include vars) /\ (Include vars2) = Include (vars /\ vars2)
+    (Exclude vars) /\ (Include vars2) = Include (vars2 \\\ vars)
+    (Include vars) /\ (Exclude vars2) = Include (vars \\\ vars2)
+    (Exclude vars) /\ (Exclude vars2) = Exclude (vars \/ vars2)
 
 instance SemiCoHeytingAlgebra a => BoundedJoinSemiLattice (Complemented a) where
     bottom = bottom
@@ -143,6 +143,17 @@ instance Ord a => LowerBoundedLattice (Set a)
 instance Ord a => LowerBoundedDistributiveLattice (Set a)
 instance Ord a => SemiCoHeytingAlgebra (Set a) where
   subtraction = (\\)
+
+instance MeetSemiLattice Integer where
+  (/\) = min
+instance JoinSemiLattice Integer where
+  (\/) = max
+instance BoundedJoinSemiLattice Integer where
+  bottom = 0
+instance LowerBoundedLattice Integer
+instance LowerBoundedDistributiveLattice Integer
+instance SemiCoHeytingAlgebra Integer where
+  subtraction a b = max 0 (a - b)
 
 (/\\), rmeetproj :: SemiCoHeytingAlgebra a => a -> Complemented a -> a
 rmeetproj vars (Include vars2) = vars /\ vars2
