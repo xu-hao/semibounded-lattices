@@ -13,7 +13,7 @@ Haskell typeclasses and instances of semibounded lattices, Heyting algebra, co-H
 module Algebra.SemiBoundedLattice (
   Complemented (..), (/\\), (//\),
   DistributiveLattice, LowerBoundedLattice, UpperBoundedLattice, LowerBoundedDistributiveLattice, UpperBoundedDistributiveLattice, BooleanAlgebra (..),
-  HeytingAlgebra, CoHeytingAlgebra, SemiHeytingAlgebra (..), SemiCoHeytingAlgebra (..), BiHeytingAlgebra) where
+  HeytingAlgebra (..), CoHeytingAlgebra (..), SemiHeytingAlgebra (..), SemiCoHeytingAlgebra (..), BiHeytingAlgebra) where
 
 -- import Data.List (union, intersect, (\\))
 import Data.Set (union, intersection, (\\), Set)
